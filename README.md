@@ -47,7 +47,7 @@ function run(array $foos, array $bars): bool
 Install this package as a dependency using [Composer](https://getcomposer.org).
 
 ``` bash
-composer require --dev ostrolucky/concise-rectors
+composer require --dev ostrolucky/rector-rules
 ```
 
 <!--

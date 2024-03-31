@@ -10,16 +10,23 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Cast\Bool_;
 use PhpParser\Node\Expr\Empty_;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Return_;
+use Rector\Php\ReservedKeywordAnalyzer;
 use Rector\Rector\AbstractRector;
-use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 
 use function array_filter;
+use function is_string;
 
+/** @psalm-suppress PropertyNotSetInConstructor Autowiring yo */
 final class RemoveUnnecessaryEmptyRector extends AbstractRector
 {
+    public function __construct(private ReservedKeywordAnalyzer $reservedKeywordAnalyzer)
+    {
+    }
+
     public function getRuleDefinition(): RuleDefinition
     {
         return new RuleDefinition('Remove unnecessary empty() calls', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
@@ -40,7 +47,7 @@ final class RemoveUnnecessaryEmptyRector extends AbstractRector
 
                 return (bool) $bars;
             }
-            CODE_SAMPLE, [DisallowedEmptyRuleFixerRector::TREAT_AS_NON_EMPTY => false]),
+            CODE_SAMPLE, []),
         ]);
     }
 
@@ -53,11 +60,11 @@ final class RemoveUnnecessaryEmptyRector extends AbstractRector
     public function refactor(Node $node): ?Node
     {
         if ($node instanceof BooleanNot) {
-            return $this->isWantedEmpty($node->expr) ? $node->expr->expr : null;
+            return $this->isAllowedEmpty($node->expr) ? $node->expr->expr : null;
         }
 
         if ($node instanceof Return_) {
-            if ($node->expr instanceof BooleanNot && $this->isWantedEmpty($node->expr->expr)) {
+            if ($node->expr instanceof BooleanNot && $this->isAllowedEmpty($node->expr->expr)) {
                 $node->expr = new Bool_($node->expr->expr->expr);
             }
 
@@ -68,10 +75,10 @@ final class RemoveUnnecessaryEmptyRector extends AbstractRector
             foreach (array_filter($node->items) as $item) {
                 $value = $item->value;
                 $key = $item->key;
-                if ($value instanceof BooleanNot && $this->isWantedEmpty($value->expr)) {
+                if ($value instanceof BooleanNot && $this->isAllowedEmpty($value->expr)) {
                     $item->value = new Bool_($value->expr->expr);
                 }
-                if ($key instanceof BooleanNot && $this->isWantedEmpty($key->expr)) {
+                if ($key instanceof BooleanNot && $this->isAllowedEmpty($key->expr)) {
                     $item->key = new Bool_($key->expr->expr);
                 }
             }
@@ -79,12 +86,20 @@ final class RemoveUnnecessaryEmptyRector extends AbstractRector
             return $node;
         }
 
-        return $this->isWantedEmpty($node) ? new BooleanNot($node->expr) : null;
+        return $this->isAllowedEmpty($node) ? new BooleanNot($node->expr) : null;
     }
 
     /** @psalm-assert-if-true Empty_ $node */
-    private function isWantedEmpty(?Node $node): bool
+    private function isAllowedEmpty(?Node $node): bool
     {
-        return $node instanceof Empty_ && !$node->expr instanceof ArrayDimFetch;
+        if (!$node instanceof Empty_ || $node->expr instanceof ArrayDimFetch) {
+            return false;
+        }
+
+        if (!$node->expr instanceof Variable) {
+            return true;
+        }
+
+        return !is_string($node->expr->name) || !$this->reservedKeywordAnalyzer->isNativeVariable($node->expr->name);
     }
 }
