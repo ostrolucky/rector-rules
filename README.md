@@ -1,4 +1,4 @@
-<h1 align="center">ostrolucky/concise-rectors</h1>
+<h1 align="center">ostrolucky/rector-rules</h1>
 
 <p align="center">
     <strong>Provides rector php rules for making the code more concise</strong>
@@ -21,15 +21,25 @@ TODO: Make sure the following URLs are correct and working for your project.
 -->
 
 
-## About
+## Usage
 
-<!--
-TODO: Use this space to provide more details about your package. Try to be
-      concise. This is the introduction to your package. Let others know what
-      your package does and how it can help them build applications.
--->
+### Rules
 
+This project provides the following rules for [`rector/rector`](https://github.com/rectorphp/rector):
 
+#### RemoveUnnecessaryEmptyRector
+```diff
+function run(array $foos, array $bars): bool
+{
+-    if (!empty($foos)) {
++    if ($foos) {
+      return $foos;
+    }
+
+-    return !empty($bars);
++    return (bool) $bars;
+}
+```
 
 
 ## Installation
@@ -37,7 +47,7 @@ TODO: Use this space to provide more details about your package. Try to be
 Install this package as a dependency using [Composer](https://getcomposer.org).
 
 ``` bash
-composer require ostrolucky/concise-rectors
+composer require --dev ostrolucky/concise-rectors
 ```
 
 <!--
@@ -60,17 +70,3 @@ echo $example->greet('fellow human');
 
 Contributions are welcome! To contribute, please familiarize yourself with
 [CONTRIBUTING.md](CONTRIBUTING.md).
-
-
-
-
-
-
-
-## Copyright and License
-
-ostrolucky/concise-rectors is copyright © [Gabriel Ostrolucký](mailto:gabriel.ostrolucky@gmail.com)
-and licensed for use under the terms of the
-MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
-
-
