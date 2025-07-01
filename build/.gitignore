@@ -13,3 +13,7 @@ coverage/*
 logs/*
 !logs
 !logs/.gitkeep
+
+coverage/*
+!coverage
+!coverage/.gitkeep

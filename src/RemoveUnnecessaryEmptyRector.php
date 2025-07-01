@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ostrolucky\RectorRules;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Array_;
@@ -51,12 +52,14 @@ final class RemoveUnnecessaryEmptyRector extends AbstractRector
         ]);
     }
 
+    #[Override]
     /** @return array<class-string<Node>> */
     public function getNodeTypes(): array
     {
         return [Return_::class, Array_::class, Empty_::class, BooleanNot::class];
     }
 
+    #[Override]
     public function refactor(Node $node): ?Node
     {
         if ($node instanceof BooleanNot) {
