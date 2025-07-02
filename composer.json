@@ -29,7 +29,10 @@
     "autoload-dev": {
         "psr-4": {
             "Ostrolucky\\Test\\RectorRules\\": "tests/"
-        }
+        },
+        "files": [
+            "vendor/rector/rector/preload.php"
+        ]
     },
     "config": {
         "allow-plugins": {
