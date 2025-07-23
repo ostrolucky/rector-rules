@@ -17,3 +17,7 @@ logs/*
 coverage/*
 !coverage
 !coverage/.gitkeep
+
+coverage/*
+!coverage
+!coverage/.gitkeep
